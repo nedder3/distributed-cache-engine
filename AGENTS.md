@@ -12,7 +12,7 @@ Motor de caché clave-valor distribuido capaz de replicar datos de forma asíncr
 - **License**: MIT (vault default; same as sibling projects).
 
 ## Vault structure
-- `projects/distributed-cache-engine/` — mirror of the future GitHub repo (canonical source).
+- `projects/distributed-cache-engine/` — mirror of the GitHub repo `nedder3/distributed-cache-engine` (canonical source).
 - `graphify-out/` is auto-generated: exclude from the Obsidian graph and do NOT edit by hand.
 
 ## Canonical documentation (this project)
@@ -47,5 +47,5 @@ Implementa estrategias de desalojo avanzadas (LRU, LFU) y consistencia eventual 
 
 ## State (scaffold created 2026-08-31)
 - No code yet. This folder is the architectural skeleton only.
-- Not yet on GitHub (the profile README links point to `github.com/nedder3`, not a real repo).
+- GitHub repo `nedder3/distributed-cache-engine` created + initial scaffold pushed (main).
 - Build tooling (Maven/Gradle) and module layout TBD in the first brief.
