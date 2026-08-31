@@ -1,0 +1,18 @@
+# Java / JVM
+target/
+*.class
+*.jar
+*.war
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+
+# OS / editor
+.DS_Store
+.vscode/
+Thumbs.db
+
+# Graphify (generated)
+graphify-out/
