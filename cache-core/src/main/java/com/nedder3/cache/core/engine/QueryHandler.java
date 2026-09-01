@@ -3,6 +3,7 @@ package com.nedder3.cache.core.engine;
 import com.nedder3.cache.core.model.CacheEntry;
 import com.nedder3.cache.core.model.CacheKey;
 import com.nedder3.cache.core.model.CacheStats;
+import com.nedder3.cache.core.port.StatsPort;
 import com.nedder3.cache.core.port.StoragePort;
 
 import java.util.Objects;
@@ -17,15 +18,15 @@ import java.util.Optional;
 public class QueryHandler<V> {
 
     private final StoragePort<V> storage;
-    private final Object statsCollector;
+    private final StatsPort stats;
 
     public QueryHandler(StoragePort<V> storage) {
         this(storage, null);
     }
 
-    public QueryHandler(StoragePort<V> storage, Object statsCollector) {
+    public QueryHandler(StoragePort<V> storage, StatsPort stats) {
         this.storage = Objects.requireNonNull(storage, "storage cannot be null");
-        this.statsCollector = statsCollector;
+        this.stats = stats;
     }
 
     public Optional<CacheEntry<V>> getEntry(CacheKey cacheKey) {
@@ -57,43 +58,21 @@ public class QueryHandler<V> {
     }
 
     public CacheStats stats() {
-        if (statsCollector != null) {
-            if (statsCollector instanceof StatsCollector sc) {
-                return sc.snapshot();
-            } else {
-                try {
-                    return (CacheStats) statsCollector.getClass().getMethod("snapshot").invoke(statsCollector);
-                } catch (Exception ignored) {
-                }
-            }
+        if (stats != null) {
+            return stats.snapshot();
         }
         return new CacheStats(0, 0, 0, 0, 0);
     }
 
     private void recordHit() {
-        if (statsCollector != null) {
-            if (statsCollector instanceof StatsCollector sc) {
-                sc.recordHit();
-            } else {
-                tryInvoke(statsCollector, "recordHit");
-            }
+        if (stats != null) {
+            stats.recordHit();
         }
     }
 
     private void recordMiss() {
-        if (statsCollector != null) {
-            if (statsCollector instanceof StatsCollector sc) {
-                sc.recordMiss();
-            } else {
-                tryInvoke(statsCollector, "recordMiss");
-            }
-        }
-    }
-
-    private void tryInvoke(Object target, String methodName) {
-        try {
-            target.getClass().getMethod(methodName).invoke(target);
-        } catch (Exception ignored) {
+        if (stats != null) {
+            stats.recordMiss();
         }
     }
 }

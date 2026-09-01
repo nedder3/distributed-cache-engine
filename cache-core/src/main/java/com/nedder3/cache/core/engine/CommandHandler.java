@@ -8,9 +8,11 @@ import com.nedder3.cache.core.event.PutEvent;
 import com.nedder3.cache.core.model.CacheKey;
 import com.nedder3.cache.core.model.EvictionReason;
 import com.nedder3.cache.core.port.ReplicationPort;
+import com.nedder3.cache.core.port.StatsPort;
 import com.nedder3.cache.core.port.StoragePort;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalLong;
@@ -28,18 +30,18 @@ public class CommandHandler<V> {
     private final StoragePort<V> storage;
     private final ReplicationPort replication;
     private final EventBus eventBus;
-    private final Object statsCollector;
+    private final StatsPort stats;
     private final AtomicLong clockSequence = new AtomicLong(0);
 
     public CommandHandler(StoragePort<V> storage, ReplicationPort replication, EventBus eventBus) {
         this(storage, replication, eventBus, null);
     }
 
-    public CommandHandler(StoragePort<V> storage, ReplicationPort replication, EventBus eventBus, Object statsCollector) {
+    public CommandHandler(StoragePort<V> storage, ReplicationPort replication, EventBus eventBus, StatsPort stats) {
         this.storage = Objects.requireNonNull(storage, "storage cannot be null");
         this.replication = Objects.requireNonNull(replication, "replication cannot be null");
         this.eventBus = Objects.requireNonNull(eventBus, "eventBus cannot be null");
-        this.statsCollector = statsCollector;
+        this.stats = stats;
     }
 
     public void put(CacheKey cacheKey, V value) {
@@ -152,39 +154,20 @@ public class CommandHandler<V> {
     }
 
     private void recordPut() {
-        if (statsCollector != null) {
-            if (statsCollector instanceof StatsCollector sc) {
-                sc.recordPut();
-            } else {
-                tryInvoke(statsCollector, "recordPut");
-            }
+        if (stats != null) {
+            stats.recordPut();
         }
     }
 
     private void recordDelete() {
-        if (statsCollector != null) {
-            if (statsCollector instanceof StatsCollector sc) {
-                sc.recordDelete();
-            } else {
-                tryInvoke(statsCollector, "recordDelete");
-            }
+        if (stats != null) {
+            stats.recordDelete();
         }
     }
 
     private void recordEviction() {
-        if (statsCollector != null) {
-            if (statsCollector instanceof StatsCollector sc) {
-                sc.recordEviction();
-            } else {
-                tryInvoke(statsCollector, "recordEviction");
-            }
-        }
-    }
-
-    private void tryInvoke(Object target, String methodName) {
-        try {
-            target.getClass().getMethod(methodName).invoke(target);
-        } catch (Exception ignored) {
+        if (stats != null) {
+            stats.recordEviction();
         }
     }
 }

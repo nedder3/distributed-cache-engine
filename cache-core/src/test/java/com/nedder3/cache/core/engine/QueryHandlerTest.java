@@ -52,7 +52,7 @@ class QueryHandlerTest {
     void setUp() {
         storage = mock(StoragePort.class);
         stats = new TestStatsCollector();
-        handler = new QueryHandler<>(storage, stats);
+        handler = new QueryHandler<Object>(storage, stats);
     }
 
     // -------------------------------------------------------------------------
@@ -376,7 +376,7 @@ class QueryHandlerTest {
     // -------------------------------------------------------------------------
 
     /** Minimal StatsCollector test double — uses LongAdder for thread-safety. */
-    private static class TestStatsCollector {
+    private static class TestStatsCollector implements com.nedder3.cache.core.port.StatsPort {
         private final java.util.concurrent.atomic.LongAdder hitsCount = new java.util.concurrent.atomic.LongAdder();
         private final java.util.concurrent.atomic.LongAdder missesCount = new java.util.concurrent.atomic.LongAdder();
         private final java.util.concurrent.atomic.LongAdder evictionsCount = new java.util.concurrent.atomic.LongAdder();

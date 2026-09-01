@@ -1,6 +1,7 @@
 package com.nedder3.cache.core.engine;
 
 import com.nedder3.cache.core.model.CacheStats;
+import com.nedder3.cache.core.port.StatsPort;
 
 import java.util.concurrent.atomic.LongAdder;
 
@@ -8,7 +9,7 @@ import java.util.concurrent.atomic.LongAdder;
  * Mutable stats collector using lock-free LongAdder counters.
  * Thread-safe for high-contention scenarios.
  */
-public final class StatsCollector {
+public final class StatsCollector implements StatsPort {
 
     private final LongAdder hits = new LongAdder();
     private final LongAdder misses = new LongAdder();

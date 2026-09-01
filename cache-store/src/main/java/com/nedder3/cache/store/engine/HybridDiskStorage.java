@@ -33,6 +33,7 @@ public class HybridDiskStorage<V> implements StoragePort<V>, Closeable {
     private final List<StorageEventListener> listeners = new CopyOnWriteArrayList<>();
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 
+    @SuppressWarnings("unchecked")
     public HybridDiskStorage(Path baseDir, long walSegmentSizeBytes, SerializerPort<V> serializer) throws IOException {
         this.baseDir = baseDir;
         this.serializer = serializer != null ? serializer : (SerializerPort<V>) new JavaNativeSerializer<Object>();

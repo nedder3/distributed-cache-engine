@@ -17,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class WriteAheadLog implements Closeable {
@@ -87,7 +86,7 @@ public class WriteAheadLog implements Closeable {
                     })
                     .filter(Objects::nonNull)
                     .sorted()
-                    .collect(Collectors.toList());
+                    .toList();
         }
     }
 
@@ -181,28 +180,31 @@ public class WriteAheadLog implements Closeable {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(baos);
 
-        if (event instanceof PutEvent put) {
-            out.writeByte(TYPE_PUT);
-            writeKey(out, put.key());
-            writeVectorClock(out, put.vectorClock());
-            out.writeLong(put.timestamp());
-            byte[] valBytes = put.serializedValue();
-            out.writeInt(valBytes.length);
-            out.write(valBytes);
-        } else if (event instanceof DeleteEvent del) {
-            out.writeByte(TYPE_DELETE);
-            writeKey(out, del.key());
-            writeVectorClock(out, del.vectorClock());
-            out.writeLong(del.timestamp());
-        } else if (event instanceof EvictEvent ev) {
-            out.writeByte(TYPE_EVICT);
-            writeKey(out, ev.key());
-            byte[] reasonBytes = ev.reason().name().getBytes(StandardCharsets.UTF_8);
-            out.writeShort(reasonBytes.length);
-            out.write(reasonBytes);
-            out.writeLong(ev.timestamp());
-        } else {
-            throw new IllegalArgumentException("Unknown CacheEvent type: " + event.getClass());
+        switch (event) {
+            case PutEvent put -> {
+                out.writeByte(TYPE_PUT);
+                writeKey(out, put.key());
+                writeVectorClock(out, put.vectorClock());
+                out.writeLong(put.timestamp());
+                byte[] valBytes = put.serializedValue();
+                out.writeInt(valBytes.length);
+                out.write(valBytes);
+            }
+            case DeleteEvent del -> {
+                out.writeByte(TYPE_DELETE);
+                writeKey(out, del.key());
+                writeVectorClock(out, del.vectorClock());
+                out.writeLong(del.timestamp());
+            }
+            case EvictEvent ev -> {
+                out.writeByte(TYPE_EVICT);
+                writeKey(out, ev.key());
+                byte[] reasonBytes = ev.reason().name().getBytes(StandardCharsets.UTF_8);
+                out.writeShort(reasonBytes.length);
+                out.write(reasonBytes);
+                out.writeLong(ev.timestamp());
+            }
+            default -> throw new IllegalArgumentException("Unknown CacheEvent type: " + event.getClass());
         }
 
         out.flush();
@@ -226,31 +228,34 @@ public class WriteAheadLog implements Closeable {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(payload));
         byte type = in.readByte();
 
-        if (type == TYPE_PUT) {
-            CacheKey key = readKey(in);
-            VectorClock clock = readVectorClock(in);
-            long timestamp = in.readLong();
-            int valLen = in.readInt();
-            byte[] valBytes = new byte[valLen];
-            in.readFully(valBytes);
-            return new PutEvent(key, valBytes, clock, timestamp);
-        } else if (type == TYPE_DELETE) {
-            CacheKey key = readKey(in);
-            VectorClock clock = readVectorClock(in);
-            long timestamp = in.readLong();
-            return new DeleteEvent(key, clock, timestamp);
-        } else if (type == TYPE_EVICT) {
-            CacheKey key = readKey(in);
-            int rLen = in.readShort() & 0xFFFF;
-            byte[] rBytes = new byte[rLen];
-            in.readFully(rBytes);
-            String reasonStr = new String(rBytes, StandardCharsets.UTF_8);
-            EvictionReason reason = EvictionReason.valueOf(reasonStr);
-            long timestamp = in.readLong();
-            return new EvictEvent(key, reason, timestamp);
-        }
-
-        throw new IllegalArgumentException("Unknown event type byte: " + type);
+        return switch (type) {
+            case TYPE_PUT -> {
+                CacheKey key = readKey(in);
+                VectorClock clock = readVectorClock(in);
+                long timestamp = in.readLong();
+                int valLen = in.readInt();
+                byte[] valBytes = new byte[valLen];
+                in.readFully(valBytes);
+                yield new PutEvent(key, valBytes, clock, timestamp);
+            }
+            case TYPE_DELETE -> {
+                CacheKey key = readKey(in);
+                VectorClock clock = readVectorClock(in);
+                long timestamp = in.readLong();
+                yield new DeleteEvent(key, clock, timestamp);
+            }
+            case TYPE_EVICT -> {
+                CacheKey key = readKey(in);
+                int rLen = in.readShort() & 0xFFFF;
+                byte[] rBytes = new byte[rLen];
+                in.readFully(rBytes);
+                String reasonStr = new String(rBytes, StandardCharsets.UTF_8);
+                EvictionReason reason = EvictionReason.valueOf(reasonStr);
+                long timestamp = in.readLong();
+                yield new EvictEvent(key, reason, timestamp);
+            }
+            default -> throw new IllegalArgumentException("Unknown event type byte: " + type);
+        };
     }
 
     private void writeKey(DataOutputStream out, CacheKey key) throws IOException {

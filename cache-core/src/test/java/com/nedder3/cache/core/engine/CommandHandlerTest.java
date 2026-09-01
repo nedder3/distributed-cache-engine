@@ -619,7 +619,7 @@ class CommandHandlerTest {
     }
 
     /** Minimal StatsCollector test double — does NOT extend StatsCollector (private fields). */
-    private static class TestStatsCollector {
+    private static class TestStatsCollector implements com.nedder3.cache.core.port.StatsPort {
         private long hitsCount = 0;
         private long missesCount = 0;
         private long evictionsCount = 0;
