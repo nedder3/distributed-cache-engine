@@ -1,30 +1,33 @@
 # Contributing
 
-Reglas para contribuir a este proyecto (aplica a Cy y a humanos).
+Guidelines and conventions for contributing to `distributed-cache-engine`.
 
 ## Commits
 
-Formato [Conventional Commits](https://www.conventionalcommits.org/) con **scope** del proyecto:
+Follow [Conventional Commits](https://www.conventionalcommits.org/) with explicit project **scope**:
 
 ```
-feat(distributed-cache-engine): agregar bus de eventos asíncrono
-fix(distributed-cache-engine): corregir race condition en el pool de hilos
-docs(distributed-cache-engine): actualizar README
-test(distributed-cache-engine): cubrir edge case de encolado
-chore: actualizar dependencias
+feat(distributed-cache-engine): add asynchronous event bus
+fix(distributed-cache-engine): resolve race condition in worker pool
+docs(distributed-cache-engine): update README architecture section
+test(distributed-cache-engine): add test coverage for queue edge cases
+chore(distributed-cache-engine): update dependency versions
 ```
 
-Tipos: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`.
-`BREAKING CHANGE:` en el body para cambios mayores.
+Allowed types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `chore`.
+Use `BREAKING CHANGE:` in commit footers for breaking API alterations.
 
-## TDD
+## Test-Driven Development (TDD)
 
-Tests antes de declarar hecho. Verificar con `hermes verify`.
+All functionality must be covered with tests before marking work as complete. Always verify using Maven:
+```bash
+mvn clean verify
+```
 
-## Documentación de código
+## Code Documentation
 
-Todo símbolo público lleva Javadoc. Ver [`docs/CODE-DOCUMENTATION.md`](docs/CODE-DOCUMENTATION.md).
+All public APIs must include comprehensive Javadoc comments detailing concurrency safety and parameters. Refer to [`docs/CODE-DOCUMENTATION.md`](docs/CODE-DOCUMENTATION.md).
 
-## Diagramas
+## Diagrams
 
-Cy genera los diagramas en `diagramas/` (mermaid). No son artefactos sueltos: viven en el vault.
+Mechanism and architecture diagrams reside in [`diagramas/`](diagramas/) (Mermaid format). Every diagram must illustrate data flow paths and component boundaries clearly.

@@ -1,36 +1,36 @@
-# Documentación de código (Javadoc)
+# Code Documentation (Javadoc)
 
-Estándar para documentar el código de este proyecto (Java; sin overengineering).
+Standard conventions for documenting source code across this project.
 
-## Regla mínima
+## Minimal Rule
 
-Todo símbolo **público** (clase o método exportado / parte de la API del componente) lleva Javadoc.
-Símbolos internos/privados: comentario corto solo si la intención no es obvia.
+Every **public** symbol (exported classes, interfaces, records, and methods part of the component API) must contain a clear Javadoc block.
+Internal/private symbols: brief comments only when the design intent or algorithmic constraint is non-obvious.
 
-## Javadoc (Java)
+## Javadoc Example
 
 ```java
 /**
- * Bus de eventos asíncrono en memoria.
- * Propaga eventos a los suscriptores mediante un pool de hilos.
+ * Asynchronous in-memory event bus.
+ * Dispatches domain events to subscribers using dedicated worker threads.
  *
- * @param <E> tipo del evento
+ * @param <E> the event type hierarchy handled by this bus
  */
 public class AsyncEventBus<E> {
     /**
-     * Publica un evento a todos los suscriptores registrados.
+     * Publishes an event to all registered subscribers.
      *
-     * @param event evento a propagar (no nulo)
-     * @throws IllegalArgumentException si event es nulo
+     * @param event the event to dispatch (must not be null)
+     * @throws IllegalArgumentException if event is null
      */
     public void publish(E event) { ... }
 }
 ```
 
-Etiquetas comunes: `@param`, `@return`, `@throws`, `@see`, `@since`, `{@code ...}`.
+Common tags: `@param`, `@return`, `@throws`, `@see`, `@since`, `{@code ...}`.
 
-## Por qué
+## Architectural Rationale
 
-- El IDE muestra el contrato sin leer el cuerpo.
-- Graphify y otras tools parsean los docstrings para el grafo.
-- El código tipo FIRST/SOLID se autodocumenta; el Javadoc aclara el *contrato*, no la implementación.
+- IDEs surface contract specifications directly without requiring source body inspection.
+- Knowledge graph tools parse structured docstrings for semantic analysis.
+- Clean code principles ensure self-documenting code; Javadocs clarify the *contract* and concurrency guarantees, not implementation details.

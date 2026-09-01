@@ -1,8 +1,11 @@
-# Java / JVM
+# Java / JVM (build output)
 target/
 *.class
 *.jar
 *.war
+*.log
+
+# IDE
 .idea/
 *.iml
 .settings/
@@ -14,5 +17,21 @@ target/
 .vscode/
 Thumbs.db
 
-# Graphify (generated)
+# Environment / secrets (NEVER commit)
+.env
+.env.*
+
+# Hermes / agent artifacts (do not commit)
+.hermes/
+AGENTS.md
+CLAUDE.md
+.cursor/
+.claude/
+
+# Internal planning (do not commit — like SESSION-INDEX)
+ROADMAP.md
+
+# Graphify (generated output, not source)
 graphify-out/
+SESSION-INDEX.md
+.tools/

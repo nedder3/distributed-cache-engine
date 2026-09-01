@@ -1,0 +1,47 @@
+graph TD
+    subgraph Client Layer
+        Client[Client Application]
+    end
+
+    subgraph Core Engine [cache-core]
+        CacheEngine[CacheEngine &lt;V&gt;]
+        CH[CommandHandler - CQRS]
+        QH[QueryHandler - CQRS]
+        EB[EventBus - Sync/Async]
+        VC[VectorClock - Causality]
+    end
+
+    subgraph Eviction Layer
+        LRU[LRUEvictionPort]
+        LFU[LFUEvictionStrategy]
+        WTiny[WTinyLFUEvictionStrategy]
+        CMS[CountMinSketch - 4-bit Filter]
+    end
+
+    subgraph Persistence Layer [cache-store]
+        HDS[HybridDiskStorage]
+        WAL[WriteAheadLog - CRC32]
+        Serializer[BinaryCacheEntrySerializer]
+    end
+
+    subgraph Replication Layer [cache-replication]
+        AARS[ActiveActiveReplicationService]
+        CR[ConflictResolver - LWW &amp; Causal]
+        CM[ClusterMembership]
+    end
+
+    Client -->|get / put / delete| CacheEngine
+    CacheEngine -->|mutations| CH
+    CacheEngine -->|reads| QH
+    CH -->|publish events| EB
+    CH -->|increment clock| VC
+    CH -->|evict if full| WTiny
+    WTiny -->|estimate freq| CMS
+
+    CH -->|persist write| HDS
+    HDS -->|append record| WAL
+    WAL -->|encode binary| Serializer
+
+    EB -->|dispatch remote| AARS
+    AARS -->|resolve concurrent writes| CR
+    AARS -->|track cluster topology| CM
